@@ -1,65 +1,90 @@
 // ** React Imports
-import { SyntheticEvent, useState } from 'react'
+import { useState } from 'react'
 
 // ** MUI Imports
-import Tab from '@mui/material/Tab'
+
 import Card from '@mui/material/Card'
-import TabList from '@mui/lab/TabList'
-import TabPanel from '@mui/lab/TabPanel'
+import Grid from '@mui/material/Grid'
 import Button from '@mui/material/Button'
-import TabContext from '@mui/lab/TabContext'
+
 import Typography from '@mui/material/Typography'
 import CardContent from '@mui/material/CardContent'
+import { TextField } from '@mui/material'
+import { FormControlLabel } from '@mui/material'
+import { Checkbox } from '@mui/material'
+import router, { useRouter } from 'next/router'
 
-const CardNavigationCenter = () => {
+const CardNavigationCenter = props => {
+  const router = useRouter();
   // ** State
-  const [value, setValue] = useState<string>('1')
+  const [permission, setpermission] = useState()
+  const [permissionerror, setpermissionerror] = useState()
 
-  const handleChange = (event: SyntheticEvent, newValue: string) => {
-    setValue(newValue)
+  const permissionhandler = event => {
+    setpermission(event.target.value)
+  }
+
+  const submithandler = (event: any) => {
+    event.preventDefault()
+   
+    setpermissionerror('')
+
+    if (permission.trim().length < 1) {
+      setpermissionerror("Empty Permission")
+    }
+     else if (permission.trim().length > 500) {
+      setpermissionerror("Permission")
+    } else {
+      // props.onAddblog(permisson)
+      console.log(permission)
+      setpermission("")
+      alert("Permission Created")
+      router.push("/view-permissions")
+      
+    }
+  }
+
+  const discardhandler = () => {
+    
+    router.push('/view-permissions')
   }
 
   return (
+    
     <Card>
-      {/* <TabContext value={value}>
-        <TabList centered onChange={handleChange} aria-label='card navigation example'>
-          <Tab value='1' label='Item One' />
-          <Tab value='2' label='Item Two' />
-          <Tab value='3' label='Item Three' />
-        </TabList>
-        <CardContent sx={{ textAlign: 'center' }}>
-          <TabPanel value='1' sx={{ p: 0 }}>
-            <Typography variant='h6' sx={{ marginBottom: 2 }}>
-              Header One
-            </Typography>
-            <Typography variant='body2' sx={{ marginBottom: 4 }}>
-              Pudding tiramisu caramels. Gingerbread gummies danish chocolate bar toffee marzipan. Wafer wafer cake
-              powder danish oat cake.
-            </Typography>
-            <Button variant='contained'>Button One</Button>
-          </TabPanel>
-          <TabPanel value='2' sx={{ p: 0 }}>
-            <Typography variant='h6' sx={{ marginBottom: 2 }}>
-              Header Two
-            </Typography>
-            <Typography variant='body2' sx={{ marginBottom: 4 }}>
-              Dragée chupa chups soufflé cheesecake jelly tootsie roll cupcake marzipan. Carrot cake sweet roll gummi
-              bears caramels jelly beans.
-            </Typography>
-            <Button variant='contained'>Button Two</Button>
-          </TabPanel>
-          <TabPanel value='3' sx={{ p: 0 }}>
-            <Typography variant='h6' sx={{ marginBottom: 2 }}>
-              Header Three
-            </Typography>
-            <Typography variant='body2' sx={{ marginBottom: 4 }}>
-              Icing cake macaroon macaroon jelly chocolate bar. Chupa chups dessert dessert soufflé chocolate bar
-              jujubes gummi bears lollipop.
-            </Typography>
-            <Button variant='contained'>Button Three</Button>
-          </TabPanel>
-        </CardContent>
-      </TabContext> */}
+      <CardContent sx={{ textAlign: 'center' }}>
+        <form onSubmit={submithandler}>
+          <Typography variant='h3' sx={{ marginBottom: 2 }}>
+            Add New Permission
+          </Typography>
+          <Typography variant='body2' sx={{ marginBottom: 4 }}>
+            Permission you may use and assign to your users.
+          </Typography>
+
+          <TextField
+            id='permisssion'
+            placeholder='Enter Permisssion Name'
+            name='permission'
+            margin='normal'
+            fullWidth
+            label='Permission Name'
+            type='text'
+            onChange={permissionhandler}
+            value={permission}
+            required
+          />
+          {permissionerror}
+          <FormControlLabel control={<Checkbox />} label='Set as core Permission' />
+          <Grid>
+          <Button type='submit' size='large' variant='contained' sx={{ mt: 4, mb: 3 }} onSubmit={submithandler}>
+            Create 
+          </Button>{" "}
+          <Button size='large' color='secondary' variant='outlined' onClick={discardhandler}>
+            Discard
+          </Button>
+          </Grid>
+        </form>
+      </CardContent>
     </Card>
   )
 }

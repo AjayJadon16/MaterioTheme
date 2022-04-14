@@ -7,10 +7,11 @@ import TableBody from '@mui/material/TableBody'
 import TableContainer from '@mui/material/TableContainer'
 import TableRow, { TableRowProps } from '@mui/material/TableRow'
 import TableCell, { TableCellProps, tableCellClasses } from '@mui/material/TableCell'
-import {useState, useEffect} from "react";
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import Button from '@mui/material/Button'
+import { defaultMaxListeners } from 'events'
 
 const StyledTableCell = styled(TableCell)<TableCellProps>(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -33,38 +34,78 @@ const StyledTableRow = styled(TableRow)<TableRowProps>(({ theme }) => ({
   }
 }))
 
-
 const TableCustomized = () => {
   const router = useRouter()
-  const [fetchedusers, setFetchedusers] = useState([]);
+  const [fetchedusers, setFetchedusers] = useState([])
 
-    
-  
-
-  
 
   useEffect(() => {
     async function displayUser() {
-      return fetch("https://reqres.in/api/users", {
-        method: "Get",
+      return fetch('https://reqres.in/api/users', {
+        method: 'Get',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify(),
-      }).then((data) => data.json());
+        body: JSON.stringify()
+      }).then(data => data.json())
     }
 
     const fetchusers = async () => {
-      const users = await displayUser();
-      setFetchedusers(users.data);
-    };
+      const users = await displayUser()
+      setFetchedusers(users.data)
+    }
 
-    fetchusers();
-  }, []);
+    fetchusers()
+  }, [])
   console.log(fetchedusers)
- 
-  
 
+  //   const deleteuser=()=>{
+  //     useEffect(() => {
+  //       // DELETE request using fetch inside useEffect React hook
+  //       fetch('https://reqres.in/api/users', { method: 'DELETE' })
+  //           .then(() => setStatus('Delete successful'));
+
+  //   }, []);
+  //   alert(status)
+  // }
+  // const UserDelete = (id) => {
+
+  //   var data = {
+  //     id: id
+  //   }
+  //   fetch('https://reqres.in/api/users', {
+  //     method: 'DELETE',
+
+  //     headers: {
+  //       Accept: 'application/form-data',
+
+  //       'Content-Type': 'application/json'
+  //     },
+
+  //     body: JSON.stringify(data)
+  //   })
+  //     .then(res => res.text())
+
+  //     .then(result => {
+  //       console.log(result)
+  //     })
+  // }
+
+  async function deleteUser() {
+    return fetch('https://reqres.in/api/users/2', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify()
+    }).then(data => data.json)
+  }
+
+  const deluser = async () => {
+    const msg = await deleteUser()
+    console.log(msg)
+    alert('User Deleted')
+  }
 
   return (
     <TableContainer component={Paper}>
@@ -78,31 +119,31 @@ const TableCustomized = () => {
             <StyledTableCell align='right'>Action</StyledTableCell>
           </TableRow>
         </TableHead>
-         <TableBody>
+        <TableBody>
           {fetchedusers.map(fetcheduser => (
-            <StyledTableRow key={fetchedusers.id}>
+            <StyledTableRow key={fetcheduser.id}>
               <StyledTableCell component='th' scope='row'>
                 {fetcheduser.avatar}
               </StyledTableCell>
               <StyledTableCell align='right'>{fetcheduser.first_name}</StyledTableCell>
               <StyledTableCell align='right'>{fetcheduser.last_name}</StyledTableCell>
               <StyledTableCell align='right'>{fetcheduser.email}</StyledTableCell>
-              <StyledTableCell align='right'> <Button
-      variant='contained' size='small'
-      onClick={() => {
-        router.push({
-          pathname: '/users/[uid]',
-          query: { uid: fetcheduser.id },
-        })
-      }}
-    >Edit
-    </Button>
+              <StyledTableCell align='right'>
+                {' '}
+                
+                <Link href={`/users/${fetcheduser.id}`}>
+                  <Button variant='contained' size='small'>
+                    Edit
+                  </Button>
+                </Link>
+                <Button variant='secondary' size='small' onClick={deluser}>
+                  Delete
+                </Button>
               </StyledTableCell>
-              
             </StyledTableRow>
           ))}
         </TableBody>
-      </Table> 
+      </Table>
     </TableContainer>
   )
 }

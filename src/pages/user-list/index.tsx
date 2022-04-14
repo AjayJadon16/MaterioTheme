@@ -13,12 +13,15 @@ import TableCustomized from 'src/views/tables/TableCustomized'
 import TableCollapsible from 'src/views/tables/TableCollapsible'
 import TableStickyHeader from 'src/views/tables/TableStickyHeader'
 
+
 const MUITable = () => {
   return (
     <Grid container spacing={6}>
-       <Grid item xs={12}>
+      <Grid item xs={12}>
         <Card>
-          <CardHeader title='User List' titleTypographyProps={{ variant: 'h6' }} />
+          <CardHeader title='User List' titleTypographyProps={{ variant: 'h6' }}>
+            
+          </CardHeader>
           <TableCustomized />
         </Card>
       </Grid>

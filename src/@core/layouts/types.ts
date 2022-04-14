@@ -17,6 +17,15 @@ export type NavLink = {
   icon?: string | string[] | ReactNode
   badgeColor?: 'default' | 'primary' | 'secondary' | 'success' | 'error' | 'warning' | 'info'
 }
+export type NavGroup = {
+  title: string
+  action?: string
+  subject?: string
+  badgeContent?: string
+  children?: (NavGroup | NavLink)[]
+  icon?: string | string[] | ReactNode
+  badgeColor?: 'default' | 'primary' | 'secondary' | 'success' | 'error' | 'warning' | 'info'
+}
 
 export type NavSectionTitle = {
   sectionTitle: string

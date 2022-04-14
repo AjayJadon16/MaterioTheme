@@ -5,33 +5,54 @@ import { ChangeEvent, MouseEvent, useEffect, useState, SyntheticEvent } from 're
 import Box from '@mui/material/Box'
 import Card from '@mui/material/Card'
 import Grid from '@mui/material/Grid'
-import Link from '@mui/material/Link'
+
 import Button from '@mui/material/Button'
 import TextField from '@mui/material/TextField'
 import CardHeader from '@mui/material/CardHeader'
-import InputLabel from '@mui/material/InputLabel'
-import IconButton from '@mui/material/IconButton'
-import Typography from '@mui/material/Typography'
+
 import CardContent from '@mui/material/CardContent'
-import FormControl from '@mui/material/FormControl'
-import OutlinedInput from '@mui/material/OutlinedInput'
-import InputAdornment from '@mui/material/InputAdornment'
-import FormHelperText from '@mui/material/FormHelperText'
+
 import Router from 'next/router'
-// ** Icons Imports
-import EyeOutline from 'mdi-material-ui/EyeOutline'
-import EyeOffOutline from 'mdi-material-ui/EyeOffOutline'
 
 interface State {
   password: string
   showPassword: boolean
 }
 
-const FormLayoutsBasic = () => {
+const Userform = id => {
   const [enteredfirstname, setenteredfirstname] = useState('')
   const [enteredlastname, setenteredlastname] = useState('')
   const [enteredemail, setenteredemail] = useState('')
   const [enterednumber, setenterednumber] = useState('')
+
+  const idd = id.id
+
+  const [fetchedusers, setFetchedusers] = useState([])
+  useEffect(() => {
+    async function displayUser() {
+      return fetch(`https://reqres.in/api/users/${idd}`, {
+        method: 'Get',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify()
+      }).then(data => data.json())
+    }
+
+    const fetchusers = async () => {
+      const data = await displayUser()
+      setFetchedusers(data.data)
+    }
+    fetchusers()
+  }, idd)
+
+  useEffect(() => {
+    if (fetchedusers) {
+      setenteredfirstname(fetchedusers.first_name)
+      setenteredlastname(fetchedusers.last_name)
+      setenteredemail(fetchedusers.email)
+    }
+  }, [fetchedusers])
 
   const firstnamehandler = (event: any) => {
     setenteredfirstname(event.target.value)
@@ -45,20 +66,16 @@ const FormLayoutsBasic = () => {
   const numberhandler = (event: any) => {
     setenterednumber(event.target.value)
   }
+  const cancelHandler = (event: any) => {
+    Router.push('/user-list')
+  }
 
   const handlesubmit = (event: any) => {
     event.preventDefault()
     const user = [enteredfirstname, enteredlastname, enteredemail, enterednumber]
     console.log(user)
-    setenteredfirstname('')
-    setenteredlastname('')
-    setenteredemail('')
-    setenterednumber('')
-    Router.push('/user-list')
 
-    const cancelHandler = (event: any) => {
-      Router.push('/user-list')
-    }
+    Router.push('/user-list')
 
     // if (enteredfirstname.trim().length < 1) {
     //   settitleerror("Empty Title");
@@ -84,6 +101,7 @@ const FormLayoutsBasic = () => {
           <Grid container spacing={5}>
             <Grid item xs={12}>
               <TextField
+                defaultValue={enteredfirstname}
                 required
                 fullWidth
                 label='First Name'
@@ -99,6 +117,7 @@ const FormLayoutsBasic = () => {
                 label='Last Name'
                 placeholder='Jadon'
                 onChange={lastnamehandler}
+                defaultValue={enteredlastname}
                 value={enteredlastname}
               />
             </Grid>
@@ -111,6 +130,7 @@ const FormLayoutsBasic = () => {
                 placeholder='ajayjadon@gmail.com'
                 helperText='You can use letters, numbers & periods'
                 onChange={emailhandler}
+                defaultValue={enteredemail}
                 value={enteredemail}
               />
             </Grid>
@@ -123,7 +143,6 @@ const FormLayoutsBasic = () => {
                 type='number'
                 onChange={numberhandler}
                 helperText='You can use only numbers'
-                value={enterednumber}
               />
             </Grid> */}
 
@@ -138,10 +157,10 @@ const FormLayoutsBasic = () => {
                 }}
               >
                 <Button type='submit' variant='contained' size='large'>
-                  Add User
+                  Edit User
                 </Button>
-                <Button size='large' color='secondary' variant='outlined'>
-                  Cancel
+                <Button size='large' color='secondary' variant='outlined' onClick={cancelHandler}>
+                  Back
                 </Button>
               </Box>
             </Grid>
@@ -153,4 +172,4 @@ const FormLayoutsBasic = () => {
   )
 }
 
-export default FormLayoutsBasic
+export default Userform

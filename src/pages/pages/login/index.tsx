@@ -61,6 +61,15 @@ const FormControlLabel = styled(MuiFormControlLabel)<FormControlLabelProps>(({ t
     color: theme.palette.text.secondary
   }
 }))
+async function loginUser(credentials) {
+  return fetch('http://166.0.138.149/login', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(credentials)
+  }).then(data => data.json())
+}
 
 const LoginPage = () => {
   // ** State
@@ -68,6 +77,12 @@ const LoginPage = () => {
     password: '',
     showPassword: false
   })
+  const [email, setemail] = useState('')
+  const [password, setpassword] = useState('')
+
+  const emailhandler = (event: any) => {
+    setemail(event.target.value)
+  }
 
   // ** Hook
   const theme = useTheme()
@@ -75,6 +90,7 @@ const LoginPage = () => {
 
   const handleChange = (prop: keyof State) => (event: ChangeEvent<HTMLInputElement>) => {
     setValues({ ...values, [prop]: event.target.value })
+    setpassword(values.password)
   }
 
   const handleClickShowPassword = () => {
@@ -83,6 +99,25 @@ const LoginPage = () => {
 
   const handleMouseDownPassword = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault()
+  }
+  // console.log(email,password)
+
+  const handlesubmit = async () => {
+    // event.preventDefault()
+
+    console.log(email, password)
+    const data = await loginUser({
+      email,
+      password
+    })
+    
+    if (data.token) {
+      localStorage.setItem("token",data.token)
+      console.log(data.token)
+      router.push('/posts')
+    } else {
+      console.log(data.error)
+    }
   }
 
   return (
@@ -168,8 +203,16 @@ const LoginPage = () => {
             </Typography>
             <Typography variant='body2'>Please sign-in to your account and start the adventure</Typography>
           </Box>
-          <form noValidate autoComplete='off' onSubmit={e => e.preventDefault()}>
-            <TextField autoFocus fullWidth id='email' label='Email' sx={{ marginBottom: 4 }} />
+          <form noValidate autoComplete='off' onSubmit={handlesubmit}>
+            <TextField
+              autoFocus
+              fullWidth
+              id='email'
+              label='Email'
+              sx={{ marginBottom: 4 }}
+              onChange={emailhandler}
+              value={email}
+            />
             <FormControl fullWidth>
               <InputLabel htmlFor='auth-login-password'>Password</InputLabel>
               <OutlinedInput
@@ -200,13 +243,7 @@ const LoginPage = () => {
                 <LinkStyled onClick={e => e.preventDefault()}>Forgot Password?</LinkStyled>
               </Link>
             </Box>
-            <Button
-              fullWidth
-              size='large'
-              variant='contained'
-              sx={{ marginBottom: 7 }}
-              onClick={() => router.push('/')}
-            >
+            <Button fullWidth size='large' variant='contained' sx={{ marginBottom: 7 }} onClick={handlesubmit}>
               Login
             </Button>
             <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>

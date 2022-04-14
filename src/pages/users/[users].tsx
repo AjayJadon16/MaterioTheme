@@ -5,19 +5,31 @@ import Grid from '@mui/material/Grid'
 import DatePickerWrapper from 'src/@core/styles/libs/react-datepicker'
 
 // ** Demo Components Imports
-import FormLayoutsBasic from 'src/views/form-layouts/FormLayoutsBasic'
+import  Userform from 'src/views/form-layouts/Userform'
 
+import { useRouter } from 'next/router'
 
+import { useState, useEffect } from 'react'
 
-const users = () => {
+const displayusers = () => {
+  const router = useRouter()
+  const { users } = router.query
+  
+  console.log(users)
+
+ 
+   
+  
+ 
+
   return (
     <DatePickerWrapper>
       <Grid container spacing={1}>
         <Grid item xs={20} md={15}>
-          <FormLayoutsBasic />
+          <Userform id={users} />
         </Grid>
       </Grid>
     </DatePickerWrapper>
   )
 }
-export default users;
+export default displayusers

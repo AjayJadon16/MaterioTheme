@@ -55,7 +55,7 @@ const Error404 = () => {
           <Typography variant='h5' sx={{ mb: 1, fontSize: '1.5rem !important' }}>
             Page Not Found ⚠️
           </Typography>
-          <Typography variant='body2'>We couldn&prime;t find the page you are looking for.</Typography>
+          <Typography variant='body2'>User Not Found.</Typography>
         </BoxWrapper>
         <Img height='487' alt='error-illustration' src='/images/pages/404.png' />
         <Link passHref href='/'>

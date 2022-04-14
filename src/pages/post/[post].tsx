@@ -1,13 +1,15 @@
-// ** MUI Imports
 import Grid from '@mui/material/Grid'
 import Typography from '@mui/material/Typography'
 
-import CardImgTop from 'src/views/cards/CardImgTop'
+import CardPostForm from 'src/views/cards/CardPostForm'
 
 import { useState } from 'react'
+import { useRouter } from 'next/router'
 
-const CardBasic = () => {
+const CardPost = () => {
+  const router = useRouter();
   const [bloglist, setbloglist] = useState([])
+  const { post } = router.query
 
   const addblog = (Postname: any, Titlename: any) => {
     setbloglist(prevBlogList => {
@@ -26,11 +28,11 @@ const CardBasic = () => {
         <Typography variant='h3'>Posts</Typography>
       </Grid>
 
-      <Grid item xs={12} sm={12} md={12}>
-        <CardImgTop onAddblog={addblog} />
+      <Grid item xs={12} sm={20} md={20}>
+        <CardPostForm onAddblog={addblog}  post={post} />
       </Grid>
     </Grid>
   )
 }
 
-export default CardBasic
+export default CardPost

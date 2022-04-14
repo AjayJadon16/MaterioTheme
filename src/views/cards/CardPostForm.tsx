@@ -4,18 +4,19 @@ import CardMedia from '@mui/material/CardMedia'
 import Typography from '@mui/material/Typography'
 import CardContent from '@mui/material/CardContent'
 import { TextField } from '@mui/material'
-import button from 'src/@core/theme/overrides/button'
 import Button from '@mui/material/Button'
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState,useEffect } from 'react'
 import Router from 'next/router'
 
-const CardImgTop = props => {
+const CardPostForm = (props) => {
+
+    const pid = props.post;
   // let navigate = useNavigate();
   const [enteredpost, setenteredpost] = useState('')
   const [enteredtitle, setenteredtitle] = useState('')
   const [posterror, setposterror] = useState('')
   const [titleerror, settitleerror] = useState('')
+  const [fetchedposts, setFetchedposts] = useState([])
   const posthandler = (event: any) => {
     setenteredpost(event.target.value)
   }
@@ -23,13 +24,8 @@ const CardImgTop = props => {
     setenteredtitle(event.target.value)
   }
 
-  // interface props {
-  //   onAddblog:any
-  // }
-
   const addposthandler = (event: any) => {
     event.preventDefault()
-
     setposterror('')
     settitleerror('')
     if (enteredtitle.trim().length < 1) {
@@ -38,7 +34,7 @@ const CardImgTop = props => {
       setposterror('Empty Description')
     } else if (enteredpost.trim().length > 500) {
       setposterror('Description Too Long')
-    } else if (enteredtitle.trim().length > 50) {
+    } else if (enteredtitle.trim().length > 500) {
       settitleerror('Title Too Long')
     } else {
       props.onAddblog(enteredpost, enteredtitle)
@@ -51,6 +47,36 @@ const CardImgTop = props => {
   const cancelhandler = () => {
     Router.push('/posts')
   }
+
+  useEffect(() => {
+    async function displayPost() {
+      return fetch(`https://gorest.co.in/public/v2/posts/${pid}`, {
+        method: 'Get',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify()
+      }).then(data => data.json())
+    }
+
+    const fetchusers = async () => {
+      const posts = await displayPost()
+      setFetchedposts(posts)
+    }
+
+    fetchusers()
+  }, pid)
+  console.log(fetchedposts)
+
+  useEffect(() => {
+    if (fetchedposts) {
+      setenteredtitle(fetchedposts.title)
+      setenteredpost(fetchedposts.body)
+     
+    }
+  }, [fetchedposts])
+
+  
 
   return (
     <Card>
@@ -70,6 +96,8 @@ const CardImgTop = props => {
             type='text'
             onChange={titlehandler}
             value={enteredtitle}
+            defaultValue={enteredtitle}
+            required
           />
           {titleerror}
 
@@ -85,15 +113,14 @@ const CardImgTop = props => {
             type='text'
             onChange={posthandler}
             value={enteredpost}
+            defaultValue={enteredpost}
+            required
           />
           {posterror}
-          {/* <Typography variant='body2'>
-          Cancun is back, better than ever! Over a hundred Mexico resorts have reopened and the state tourism minister
-          predicts Cancun will draw as many visitors in 2006 as it did two years ago.
-        </Typography> */}
+          
 
           <Button type='submit' variant='contained' sx={{ mt: 4, mb: 3 }} onSubmit={addposthandler}>
-            Add Post
+            Edit Post
           </Button>{"    "}
           <Button size='large' color='secondary' variant='outlined' onClick={cancelhandler}>
             Back
@@ -104,4 +131,4 @@ const CardImgTop = props => {
   )
 }
 
-export default CardImgTop
+export default CardPostForm;
