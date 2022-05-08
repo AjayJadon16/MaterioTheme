@@ -7,17 +7,17 @@ import CardImgTop from 'src/views/cards/CardImgTop'
 import { useState } from 'react'
 
 const CardBasic = () => {
-  const [bloglist, setbloglist] = useState([])
+  // const [bloglist, setbloglist] = useState([])
 
-  const addblog = (Postname: any, Titlename: any) => {
-    setbloglist(prevBlogList => {
-      return [
-        ...prevBlogList,
-        { titlename: Titlename, id: Math.random().toString() },
-        { postname: Postname, id: Math.random().toString() }
-      ]
-    })
-  }
+  // const addblog = (Postname: any, Titlename: any) => {
+  //   setbloglist(prevBlogList => {
+  //     return [
+  //       ...prevBlogList,
+  //       { titlename: Titlename, id: Math.random().toString() },
+  //       { postname: Postname, id: Math.random().toString() }
+  //     ]
+  //   })
+  // }
   
 
   return (
@@ -27,7 +27,7 @@ const CardBasic = () => {
       </Grid>
 
       <Grid item xs={12} sm={12} md={12}>
-        <CardImgTop onAddblog={addblog} />
+        <CardImgTop  />
       </Grid>
     </Grid>
   )

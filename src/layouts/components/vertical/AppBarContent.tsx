@@ -5,7 +5,8 @@ import TextField from '@mui/material/TextField'
 import IconButton from '@mui/material/IconButton'
 import useMediaQuery from '@mui/material/useMediaQuery'
 import InputAdornment from '@mui/material/InputAdornment'
-
+import Button from '@mui/material/Button'
+import router, { useRouter } from 'next/router'
 // ** Icons Imports
 import Menu from 'mdi-material-ui/Menu'
 import Magnify from 'mdi-material-ui/Magnify'
@@ -26,6 +27,10 @@ interface Props {
 }
 
 const AppBarContent = (props: Props) => {
+
+  const router = useRouter();
+
+  
   // ** Props
   const { hidden, settings, saveSettings, toggleNavVisibility } = props
 
@@ -44,6 +49,7 @@ const AppBarContent = (props: Props) => {
             <Menu />
           </IconButton>
         ) : null}
+        
         {/* <TextField
           size='small'
           sx={{ '& .MuiOutlinedInput-root': { borderRadius: 4 } }}
@@ -72,9 +78,10 @@ const AppBarContent = (props: Props) => {
             />
           </Box>
         )} */}
+        
         <ModeToggler settings={settings} saveSettings={saveSettings} />
         {/* <NotificationDropdown /> */}
-        {/* <UserDropdown /> */}
+        <UserDropdown />
       </Box>
     </Box>
   )

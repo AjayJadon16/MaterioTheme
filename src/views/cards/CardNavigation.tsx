@@ -12,114 +12,98 @@ import CardContent from '@mui/material/CardContent'
 import { TextField } from '@mui/material'
 import { FormControlLabel } from '@mui/material'
 import { Checkbox } from '@mui/material'
-import router, { useRouter } from 'next/router'
+import  { useRouter } from 'next/router'
+import { Snackbar } from '@mui/material'
+import * as React from 'react'
+import Alert from '@mui/material/Alert'
 
-const CardNavigationCenter = props => {
-  const rowss = [
-    {
-      id: '1',
-      name: 'Management',
-      assigned: 'Administrator',
-      created: '14 Apr 2021, 8:43 PM'
-    },
+const CardNavigationCenter = permissions => {
+  const [display_name, setdisplay_name] = useState('')
+  const [description, setdescription] = useState('')
 
-    {
-      id: '2',
-      name: 'Manage Billing & Roles',
-      assigned: 'Administrator',
-      created: '15 Apr 2021, 8:43 PM'
-    },
-    {
-      id: '3',
-      name: 'Add & Remove Users',
-      assigned: 'Administrator, Manager',
-      created: '16 Apr 2021, 8:43 PM'
-    },
-    {
-      id: '4',
-      name: 'Create Post',
-      assigned: 'Administrator, Manager',
-      created: '16 Apr 2021, 8:43 PM'
-    },
+  const [fetchedpermissions, setfetchedpermissions] = useState()
+  const [message, setMessage] = useState({
+    open: false,
+    type: 'success',
+    vertical: 'top',
+    horizontal: 'center',
+    text: ''
+  })
 
-    {
-      id: '5',
-      name: 'Delete Post',
-      assigned: 'Administrator, Manager',
-      created: '16 Apr 2021, 8:43 PM'
-    },
-
-    {
-      id: '6',
-      name: 'Create user',
-      assigned: 'Administrator',
-      created: '16 Apr 2021, 8:43 PM'
-    },
-
-    {
-      id: '7',
-      name: 'Delete user',
-      assigned: 'Administrator',
-      created: '12 Apr 2021, 8:43 PM'
-    },
-    {
-      id: '8',
-      name: 'Only View',
-      assigned: 'Administrator, Manager',
-      created: '16 Apr 2021, 8:43 PM'
-    },
-
-    {
-      id: '9',
-      name: 'Client Communication',
-      assigned: 'Administrator, Manager',
-      created: '16 Apr 2021, 8:43 PM'
-    },
-
-    {
-      id: '10',
-      name: 'Project Planning',
-      assigned: 'Administrator',
-      created: '16 Apr 2021, 8:43 PM'
+  const handleClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return
     }
-  ]
-
-  const ispermission = pm => {
-    return pm.id == props.permissions
+    setMessage({ ...message, open: false })
   }
 
-  const item = rowss.find(ispermission)
-  console.log(item)
+ 
+  const descriptionhandler = event => {
+    setdescription(event.target.value)
+  }
+  const display_namehandler = event => {
+    setdisplay_name(event.target.value)
+  }
 
   const router = useRouter()
-  // ** State
-  const [permission, setpermission] = useState()
-  const [permissionerror, setpermissionerror] = useState()
 
-  const permissionhandler = event => {
-    setpermission(event.target.value)
-  }
   useEffect(() => {
-    if (item) {
-      setpermission(item.name)
+    async function displayPermission() {
+      const token = localStorage.getItem('token')
+      return fetch(`http://166.0.138.149:9000/policy/${permissions.permissions}`, {
+        method: 'Get',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify()
+      }).then(data => data.json())
     }
-  }, [item])
 
-  const submithandler = (event: any) => {
+    const fetchpermissions = async () => {
+      const data = await displayPermission()
+      setfetchedpermissions(data.data)
+    }
+    fetchpermissions()
+  }, permissions.permissions)
+
+  useEffect(() => {
+    if (fetchedpermissions) {
+      setdisplay_name(fetchedpermissions.display_name)
+      setdescription(fetchedpermissions.description)
+    }
+  }, [fetchedpermissions])
+  // ** State
+  async function editpermission(credentials) {
+    const token = localStorage.getItem('token')
+    return fetch(`http://166.0.138.149:9000/policy/${permissions.permissions}`, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(credentials)
+    }).then(data => data.json())
+  }
+
+  const submithandler = async (event: any) => {
     event.preventDefault()
+    console.log(display_name, description)
+    const data = await editpermission({
+      display_name,
+      description,
+      
+    })
+    console.log(data)
 
-    setpermissionerror('')
-
-    if (permission.trim().length < 1) {
-      setpermissionerror('Empty Permission')
-    } else if (permission.trim().length > 500) {
-      setpermissionerror('Permission ')
-    } else {
-      // props.onAddblog(permisson)
-      console.log(permission)
-      setpermission('')
-      alert("Permission Updated")
+    if (!data.error) {
+      setMessage({ ...message, open: true, text: 'Permission Updated.', type: 'success' })
+      setTimeout(() => {
+        router.push('/view-permissions')
+      }, 2000)
       router.push('/view-permissions')
+    } else {
+      setMessage({ ...message, open: true, text: data.message, type: 'error' })
     }
   }
 
@@ -132,36 +116,58 @@ const CardNavigationCenter = props => {
       <CardContent sx={{ textAlign: 'center' }}>
         <form onSubmit={submithandler}>
           <Typography variant='h3' sx={{ marginBottom: 2 }}>
-            Add New Permission
+            Edit Permission
           </Typography>
           <Typography variant='body2' sx={{ marginBottom: 4 }}>
             Permission you may use and assign to your users.
           </Typography>
           <TextField
             id='permisssion'
-            placeholder='Enter Permisssion Name'
-            name='permission'
+            placeholder='Enter Permisssion display_name'
+            display_name='permission'
             margin='normal'
             fullWidth
-            label='Permission Name'
+            label='Permission display_name'
             type='text'
-            onChange={permissionhandler}
-            value={permission}
+            onChange={display_namehandler}
+            value={display_name}
             required
-            defaultValue={item.name}
           />
-          {permissionerror}
+
+          <TextField
+            id='description'
+            placeholder='Enter description'
+            display_name='description'
+            margin='normal'
+            fullWidth
+            label='Description display_name'
+            type='text'
+            onChange={descriptionhandler}
+            value={description}
+            required
+          />
           <FormControlLabel control={<Checkbox />} label='Set as core Permission' />
           <Grid>
-          <Button type='submit' size='large' variant='contained' sx={{ mt: 4, mb: 3 }} onSubmit={submithandler}>
-            Save
-          </Button>{' '}
-          <Button size='large' color='secondary' variant='outlined' onClick={discardhandler}>
-            Discard
-          </Button>
+            <Button type='submit' size='large' variant='contained' sx={{ mt: 4, mb: 3 }} onSubmit={submithandler}>
+              Save
+            </Button>{' '}
+            <Button size='large' color='secondary' variant='outlined' onClick={discardhandler}>
+              Discard
+            </Button>
           </Grid>
         </form>
       </CardContent>
+      <Snackbar
+        open={message.open}
+        autoHideDuration={3000}
+        onClose={handleClose}
+        anchorOrigin={message}
+        key={message.vertical + message.horizontal}
+      >
+        <Alert onClose={handleClose} severity={message.type} sx={{ width: '100%' }}>
+          {message.text}
+        </Alert>
+      </Snackbar>
     </Card>
   )
 }

@@ -50,14 +50,14 @@ const Userform = id => {
 
  }
 
-  const idd = id.id
+  
  
 
   const [fetchedusers, setFetchedusers] = useState([])
   useEffect(() => {
     async function displayUser() {
       const token = localStorage.getItem('token')
-      return fetch(`http://166.0.138.149:9000/users/${idd}`, {
+      return fetch(`http://166.0.138.149:9000/me`, {
         method: 'Get',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -72,7 +72,7 @@ const Userform = id => {
       setFetchedusers(data.data)
     }
     fetchusers()
-  }, idd)
+  }, [])
   
 
   useEffect(() => {
@@ -99,9 +99,12 @@ const Userform = id => {
   const cancelHandler = (event: any) => {
     Router.push('/user-list')
   }
+
+  const idd = fetchedusers._id
+
   async function edituser(credentials) {
     const token = localStorage.getItem('token')
-    return fetch(`http://166.0.138.149:9000/updateUser/${idd}`, {
+    return fetch(`http://166.0.138.149:9000/users/${idd}`, {
       method: 'PUT',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -115,7 +118,7 @@ const Userform = id => {
     event.preventDefault()
     console.log(name)
     const data = await edituser({
-      name,gender,email,roleid
+      name,gender,email
     })
     console.log(name,gender)
 
@@ -126,6 +129,7 @@ const Userform = id => {
       }, 2000)
       
       
+      
     } else {
       setMessage({ ...message, open: true, text: data.message, type: 'error' })
     }
@@ -134,7 +138,7 @@ const Userform = id => {
 
   return (
     <Card>
-      <CardHeader title='User Details' titleTypographyProps={{ variant: 'h6' }} />
+      <CardHeader title='My Profile' titleTypographyProps={{ variant: 'h6' }} />
       <CardContent>
         <form onSubmit={handlesubmit}>
         <Grid container spacing={5}>
@@ -173,7 +177,7 @@ const Userform = id => {
             </Grid>
             
 
-            <Grid item xs={12}>
+            {/* <Grid item xs={12}>
             
             <InputLabel id="demo-simple-select-label">Role</InputLabel>
             <Select
@@ -191,7 +195,7 @@ const Userform = id => {
               <MenuItem value={1}>Admin</MenuItem>
               <MenuItem value={2}>User</MenuItem>
             </Select>
-            </Grid>
+            </Grid> */}
             
             <Grid item xs={12}>
               <Box
@@ -204,7 +208,7 @@ const Userform = id => {
                 }}
               >
                 <Button type='submit' variant='contained' size='large'>
-                  Edit User
+                  Edit 
                 </Button>
                 <Button size='large' color='secondary' variant='outlined' onClick={cancelHandler}>
                   Back

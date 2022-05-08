@@ -1,11 +1,14 @@
 // ** React Imports
-import { ChangeEvent, MouseEvent, ReactNode, useState } from 'react'
+import { ChangeEvent, MouseEvent, ReactNode, useState,useEffect } from 'react'
 
 // ** Next Imports
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 
 // ** MUI Components
+import { Snackbar } from '@mui/material'
+import * as React from 'react'
+import Alert from '@mui/material/Alert'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Divider from '@mui/material/Divider'
@@ -29,7 +32,9 @@ import Twitter from 'mdi-material-ui/Twitter'
 import Facebook from 'mdi-material-ui/Facebook'
 import EyeOutline from 'mdi-material-ui/EyeOutline'
 import EyeOffOutline from 'mdi-material-ui/EyeOffOutline'
+import CircularProgress from '@mui/material/CircularProgress';
 
+import LinearProgress from '@mui/material/LinearProgress'
 // ** Configs
 import themeConfig from 'src/configs/themeConfig'
 
@@ -38,7 +43,7 @@ import BlankLayout from 'src/@core/layouts/BlankLayout'
 
 // ** Demo Imports
 import FooterIllustrationsV1 from 'src/views/pages/auth/FooterIllustration'
-
+import {useAuth} from '../../../contexts/auth'
 interface State {
   password: string
   showPassword: boolean
@@ -61,8 +66,11 @@ const FormControlLabel = styled(MuiFormControlLabel)<FormControlLabelProps>(({ t
     color: theme.palette.text.secondary
   }
 }))
+
+
+
 async function loginUser(credentials) {
-  return fetch('http://166.0.138.149/login', {
+  return fetch('http://166.0.138.149:9000/login', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -75,22 +83,52 @@ const LoginPage = () => {
   // ** State
   const [values, setValues] = useState<State>({
     password: '',
-    showPassword: false
+    showPassword: false,
+    error:""
   })
   const [email, setemail] = useState('')
-  const [password, setpassword] = useState('')
+  const [message, setMessage] = useState({
+    open: false,
+    type: 'success',
+    vertical: 'top',
+    horizontal: 'center',
+    text: ''
+  })
+  const homePageRoute = themeConfig.homePageRoute;
+  const auth = useAuth()
+
+  // ** Hook
+  const theme = useTheme()
+
+  useEffect(() => {
+    async function loadUserFromlocalStorage() {
+      const token = localStorage.getItem('token'), user_data = localStorage.getItem('user_data')
+      if (token && user_data) {
+        router.push(homePageRoute)
+      }
+    }
+    loadUserFromlocalStorage()
+  }, [])
+  
+  const handleClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return
+    }
+    setMessage({ ...message, open: false })
+  }
+  
 
   const emailhandler = (event: any) => {
     setemail(event.target.value)
   }
 
   // ** Hook
-  const theme = useTheme()
+  
   const router = useRouter()
 
   const handleChange = (prop: keyof State) => (event: ChangeEvent<HTMLInputElement>) => {
     setValues({ ...values, [prop]: event.target.value })
-    setpassword(values.password)
+    
   }
 
   const handleClickShowPassword = () => {
@@ -100,24 +138,43 @@ const LoginPage = () => {
   const handleMouseDownPassword = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault()
   }
-  // console.log(email,password)
+  // console.log(password)
+  // console.log(values.password)
+  const password = values.password
 
-  const handlesubmit = async () => {
-    // event.preventDefault()
 
-    console.log(email, password)
-    const data = await loginUser({
-      email,
-      password
+
+  const handlesubmit = async (event) => {
+    event.preventDefault()
+
+    // console.log(email,password)
+    // const data = await loginUser({
+    //   email,
+    //   password
+    // })
+    // console.log(data)
+    auth.login(email, password)
+    .then(res => {
+      if (res.err) {
+        setMessage({ ...message, open: true, text: data.message, type: 'error' })
+      }
     })
+   
     
-    if (data.token) {
-      localStorage.setItem("token",data.token)
-      console.log(data.token)
-      router.push('/posts')
-    } else {
-      console.log(data.error)
-    }
+  //   if (!data.error) {
+  //     localStorage.setItem("token",data.token)
+      
+  //     localStorage.setItem('user_data', JSON.stringify(data.data))
+      
+  //     setMessage({ ...message, open: true, text: 'Login Sucessfull.', type: 'success' })
+  //     setTimeout(() => {
+  //       router.push(homePageRoute)
+  //     }, 2000)
+     
+  //   } else {
+  //     console.log(data.message)
+  //     setMessage({ ...message, open: true, text: data.message, type: 'error' })
+  //   }
   }
 
   return (
@@ -283,6 +340,17 @@ const LoginPage = () => {
             </Box>
           </form>
         </CardContent>
+        <Snackbar
+        open={message.open}
+        autoHideDuration={3000}
+        onClose={handleClose}
+        anchorOrigin={message}
+        key={message.vertical + message.horizontal}
+      >
+        <Alert onClose={handleClose} severity={message.type} sx={{ width: '100%' }}>
+          {message.text}
+        </Alert>
+      </Snackbar>
       </Card>
       <FooterIllustrationsV1 />
     </Box>

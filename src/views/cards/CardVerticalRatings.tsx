@@ -13,47 +13,57 @@ import { useRouter } from 'next/router'
 import { Alert } from '@mui/material'
 import { Dialog } from '@mui/material'
 import Link from 'next/link'
+import CircularProgress from '@mui/material/CircularProgress'
+
+import LinearProgress from '@mui/material/LinearProgress'
 
 const CardVerticalRatings = () => {
   const router = useRouter()
   const [fetchedposts, setFetchedposts] = useState([])
   const [open, setOpen] = useState(false)
 
+  const [values, setValues] = useState({
+    users: [],
+    isUserDataAvailable: false,
+    error: ''
+  })
+
   useEffect(() => {
     async function displayPost() {
-      return fetch('https://gorest.co.in/public/v2/posts', {
+      const token = localStorage.getItem('token')
+      return fetch('http://166.0.138.149:9000/posts', {
         method: 'Get',
         headers: {
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify()
       }).then(data => data.json())
     }
 
-    const fetchusers = async () => {
+    const fetchposts = async () => {
       const posts = await displayPost()
-      setFetchedposts(posts)
+      setFetchedposts(posts.data)
+      setValues({ ...values, users: posts.data, isUserDataAvailable: true, error: '' })
     }
 
-    fetchusers()
-  }, [])
-  console.log(fetchedposts)
+    fetchposts()
+  }, [fetchedposts])
 
-  async function deleteUser() {
-    return fetch('https://reqres.in/api/users/1402', {
+  async function deleteUser(id) {
+    const token = localStorage.getItem('token')
+    return fetch(`http://166.0.138.149:9000/posts/${id}`, {
       method: 'DELETE',
       headers: {
+        Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify()
     }).then(data => data.json)
   }
-
-  const deluser = async () => {
-    const msg = await deleteUser()
+  const deluser = async id => {
+    const msg = await deleteUser(id)
     console.log(msg)
-    alert('Post Deleted Sucessfully')
-    setOpen(!open)
   }
 
   const cardStyle = {
@@ -64,47 +74,41 @@ const CardVerticalRatings = () => {
 
   return (
     <Grid container spacing={6}>
-      {fetchedposts.map(fetchedpost => (
-        <Grid item xs={12} sm={6} md={4}>
-          <Card style={cardStyle}>
-            <CardHeader title={fetchedpost.title} />
-            <CardContent>
-              <Typography variant='body2' sx={{ marginBottom: 3.25 }}>
-                {fetchedpost.body}
-              </Typography>
-            </CardContent>
-            <CardActions className='card-action-dense'>
-              {/* <Button
-                variant='contained'
-                size='small'
-                onClick={event => {
-                  event.preventDefault()
-                  router.push({
-                    pathname: '/post/[pid]',
-                    query: { pid: fetchedpost.id }
-                  })
-                }}
-              >
-                Edit
-              </Button> */}
+      {values.isUserDataAvailable ? (
+        fetchedposts.map(fetchedpost => (
+          <Grid item xs={12} sm={6} md={4}>
+            <Card>
+              <CardHeader title={fetchedpost.title} />
+              <CardContent>
+                <Typography variant='body2' sx={{ marginBottom: 3.25 }}>
+                  {fetchedpost.body}
+                </Typography>
+              </CardContent>
+              <CardActions className='card-action-dense'>
+                <Link href={`/post/${fetchedpost._id}`}>
+                  <Button variant='contained' size='small'>
+                    Edit
+                  </Button>
+                </Link>
 
-              <Link href={`/post/${fetchedpost.id}`}>
-                <Button variant='contained' size='small'>
-                  Edit
+                <Button variant='secondary' size='small' onClick={() => deluser(fetchedpost._id)}>
+                  Delete
                 </Button>
-              </Link>
-
-              <Button variant='secondary' size='small' onClick={deluser}>
-                Delete
-              </Button>
-
-              {/* <Dialog open={open} onClose={deluser} fullScreen= {false}>
-            <Alert severity="success">Post Deleted Sucessfully!</Alert>
-            </Dialog> */}
-            </CardActions>
-          </Card>
+              </CardActions>
+            </Card>
+          </Grid>
+        ))
+      ) : (
+        <Grid container>
+          <Grid item xs={6} md={6}></Grid>
+          <Grid item xs={6} item md={6}>
+          <Box sx={{ width: '100%', height: '40px' }}>
+            <CircularProgress color='success' />
+            {/* <ReactLoading type='cylon' color='#0000FF' /> */}
+          </Box>
+          </Grid>
         </Grid>
-      ))}
+      )}
     </Grid>
   )
 }

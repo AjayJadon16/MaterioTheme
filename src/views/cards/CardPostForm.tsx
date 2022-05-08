@@ -5,42 +5,78 @@ import Typography from '@mui/material/Typography'
 import CardContent from '@mui/material/CardContent'
 import { TextField } from '@mui/material'
 import Button from '@mui/material/Button'
-import { useState,useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import Router from 'next/router'
+import { PopperUnstyled } from '@mui/base'
+import { Snackbar } from '@mui/material'
+import * as React from 'react'
+import Alert from '@mui/material/Alert'
+const CardPostForm = post => {
+  console.log(post)
 
-const CardPostForm = (props) => {
-
-    const pid = props.post;
   // let navigate = useNavigate();
-  const [enteredpost, setenteredpost] = useState('')
-  const [enteredtitle, setenteredtitle] = useState('')
+  const [body, setbody] = useState('')
+  const [title, settitle] = useState('')
   const [posterror, setposterror] = useState('')
   const [titleerror, settitleerror] = useState('')
   const [fetchedposts, setFetchedposts] = useState([])
+
+  const [message, setMessage] = useState({
+    open: false,
+    type: 'success',
+    vertical: 'top',
+    horizontal: 'center',
+    text: ''
+  })
+
+  const handleClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return
+    }
+    setMessage({ ...message, open: false })
+  }
   const posthandler = (event: any) => {
-    setenteredpost(event.target.value)
+    setbody(event.target.value)
   }
   const titlehandler = (event: any) => {
-    setenteredtitle(event.target.value)
+    settitle(event.target.value)
   }
 
-  const addposthandler = (event: any) => {
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('token')
+  }
+
+  async function editpost(credentials) {
+    return fetch(`http://166.0.138.149:9000/posts/${post.post}`, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(credentials)
+    }).then(data => data.json())
+  }
+  const status = 'published'
+  const addposthandler = async (event: any) => {
     event.preventDefault()
     setposterror('')
     settitleerror('')
-    if (enteredtitle.trim().length < 1) {
-      settitleerror('Empty Title')
-    } else if (enteredpost.trim().length < 1) {
-      setposterror('Empty Description')
-    } else if (enteredpost.trim().length > 500) {
-      setposterror('Description Too Long')
-    } else if (enteredtitle.trim().length > 500) {
-      settitleerror('Title Too Long')
+
+    const data = await editpost({
+      title,
+      body,
+      status
+    })
+    if (!data.error) {
+      console.log(data.data)
+      setMessage({ ...message, open: true, text: 'Post Updated.', type: 'success' })
+      setTimeout(() => {
+        Router.push('/posts')
+      }, 2000)
+      setbody('')
+      settitle('')
     } else {
-      props.onAddblog(enteredpost, enteredtitle)
-      setenteredpost('')
-      setenteredtitle('')
-      Router.push('/posts')
+      setMessage({ ...message, open: true, text: data.message, type: 'error' })
     }
   }
 
@@ -50,9 +86,11 @@ const CardPostForm = (props) => {
 
   useEffect(() => {
     async function displayPost() {
-      return fetch(`https://gorest.co.in/public/v2/posts/${pid}`, {
+      const token = localStorage.getItem('token')
+      return fetch(`http://166.0.138.149:9000/posts/${post.post}`, {
         method: 'Get',
         headers: {
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify()
@@ -61,22 +99,19 @@ const CardPostForm = (props) => {
 
     const fetchusers = async () => {
       const posts = await displayPost()
-      setFetchedposts(posts)
+      setFetchedposts(posts.data)
     }
 
     fetchusers()
-  }, pid)
+  }, [])
   console.log(fetchedposts)
 
   useEffect(() => {
     if (fetchedposts) {
-      setenteredtitle(fetchedposts.title)
-      setenteredpost(fetchedposts.body)
-     
+      settitle(fetchedposts.title)
+      setbody(fetchedposts.body)
     }
   }, [fetchedposts])
-
-  
 
   return (
     <Card>
@@ -95,11 +130,10 @@ const CardPostForm = (props) => {
             label='Title'
             type='text'
             onChange={titlehandler}
-            value={enteredtitle}
-            defaultValue={enteredtitle}
+            value={title}
+            defaultValue={title}
             required
           />
-          {titleerror}
 
           <TextField
             placeholder='Description'
@@ -112,23 +146,33 @@ const CardPostForm = (props) => {
             rows={6}
             type='text'
             onChange={posthandler}
-            value={enteredpost}
-            defaultValue={enteredpost}
+            value={body}
+            defaultValue={body}
             required
           />
-          {posterror}
-          
 
           <Button type='submit' variant='contained' sx={{ mt: 4, mb: 3 }} onSubmit={addposthandler}>
             Edit Post
-          </Button>{"    "}
+          </Button>
+          {'    '}
           <Button size='large' color='secondary' variant='outlined' onClick={cancelhandler}>
             Back
           </Button>
         </form>
       </CardContent>
+      <Snackbar
+        open={message.open}
+        autoHideDuration={3000}
+        onClose={handleClose}
+        anchorOrigin={message}
+        key={message.vertical + message.horizontal}
+      >
+        <Alert onClose={handleClose} severity={message.type} sx={{ width: '100%' }}>
+          {message.text}
+        </Alert>
+      </Snackbar>
     </Card>
   )
 }
 
-export default CardPostForm;
+export default CardPostForm

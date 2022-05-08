@@ -9,42 +9,83 @@ import Button from '@mui/material/Button'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Router from 'next/router'
+import { Snackbar } from '@mui/material'
+import MuiAlert from '@mui/material/Alert'
+import * as React from 'react'
 
-const CardImgTop = props => {
+const CardImgTop = () => {
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('token')
+  }
+
+  async function createpost(credentials) {
+    return fetch('http://166.0.138.149:9000/posts', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(credentials)
+    }).then(data => data.json())
+  }
   // let navigate = useNavigate();
-  const [enteredpost, setenteredpost] = useState('')
-  const [enteredtitle, setenteredtitle] = useState('')
+  const [body, setbody] = useState('')
+  const [title, settitle] = useState('')
   const [posterror, setposterror] = useState('')
   const [titleerror, settitleerror] = useState('')
+  const [message, setMessage] = useState({
+    open: false,
+    type: 'success',
+    vertical: 'top',
+    horizontal: 'center',
+    text: ''
+  })
+
+  const handleClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return
+    }
+    setMessage({...message, open: false})
+  }
   const posthandler = (event: any) => {
-    setenteredpost(event.target.value)
+    setbody(event.target.value)
   }
   const titlehandler = (event: any) => {
-    setenteredtitle(event.target.value)
+    settitle(event.target.value)
   }
 
-  // interface props {
-  //   onAddblog:any
-  // }
+  const Alert = React.forwardRef(function Alert(props, ref) {
+    return <MuiAlert elevation={6} ref={ref} variant='filled' {...props} />
+  })
+  
 
-  const addposthandler = (event: any) => {
+  const status = 'published'
+
+  const addposthandler = async (event: any) => {
     event.preventDefault()
 
     setposterror('')
     settitleerror('')
-    if (enteredtitle.trim().length < 1) {
-      settitleerror('Empty Title')
-    } else if (enteredpost.trim().length < 1) {
-      setposterror('Empty Description')
-    } else if (enteredpost.trim().length > 500) {
-      setposterror('Description Too Long')
-    } else if (enteredtitle.trim().length > 50) {
-      settitleerror('Title Too Long')
+
+    const data = await createpost({
+      title,
+      body,
+      status
+    })
+
+    if (!data.error) {
+      console.log(data.data)
+      setMessage({...message, open: true, text: 'Post Created.', type: 'success'})
+        setTimeout(() => {
+          Router.push('/posts')
+        }, 2000)
+      // Router.push('/posts')
+      setbody('')
+      settitle('')
     } else {
-      props.onAddblog(enteredpost, enteredtitle)
-      setenteredpost('')
-      setenteredtitle('')
-      Router.push('/posts')
+      
+
+      setMessage({ ...message, open: true, text: data.message, type: 'error' })
     }
   }
 
@@ -69,9 +110,9 @@ const CardImgTop = props => {
             label='Title'
             type='text'
             onChange={titlehandler}
-            value={enteredtitle}
+            value={title}
+            required
           />
-          {titleerror}
 
           <TextField
             placeholder='Description'
@@ -84,22 +125,30 @@ const CardImgTop = props => {
             rows={6}
             type='text'
             onChange={posthandler}
-            value={enteredpost}
+            value={body}
+            required
           />
-          {posterror}
-          {/* <Typography variant='body2'>
-          Cancun is back, better than ever! Over a hundred Mexico resorts have reopened and the state tourism minister
-          predicts Cancun will draw as many visitors in 2006 as it did two years ago.
-        </Typography> */}
 
           <Button type='submit' variant='contained' sx={{ mt: 4, mb: 3 }} onSubmit={addposthandler}>
             Add Post
-          </Button>{"    "}
+          </Button>
+          {'    '}
           <Button size='large' color='secondary' variant='outlined' onClick={cancelhandler}>
             Back
           </Button>
         </form>
       </CardContent>
+      <Snackbar
+          open={message.open}
+          autoHideDuration={3000}
+          onClose={handleClose}
+          anchorOrigin={message}
+          key={message.vertical + message.horizontal}
+        >
+          <Alert onClose={handleClose} severity={message.type} sx={{ width: '100%' }}>
+            {message.text}
+          </Alert>
+        </Snackbar>
     </Card>
   )
 }

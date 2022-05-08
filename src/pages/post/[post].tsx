@@ -8,19 +8,8 @@ import { useRouter } from 'next/router'
 
 const CardPost = () => {
   const router = useRouter();
-  const [bloglist, setbloglist] = useState([])
-  const { post } = router.query
 
-  const addblog = (Postname: any, Titlename: any) => {
-    setbloglist(prevBlogList => {
-      return [
-        ...prevBlogList,
-        { titlename: Titlename, id: Math.random().toString() },
-        { postname: Postname, id: Math.random().toString() }
-      ]
-    })
-  }
-  
+  const { post } = router.query
 
   return (
     <Grid container spacing={1}>
@@ -29,7 +18,7 @@ const CardPost = () => {
       </Grid>
 
       <Grid item xs={12} sm={20} md={20}>
-        <CardPostForm onAddblog={addblog}  post={post} />
+        <CardPostForm   post={post} />
       </Grid>
     </Grid>
   )

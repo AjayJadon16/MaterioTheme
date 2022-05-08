@@ -30,24 +30,24 @@ const navigation = (): VerticalNavItemsType => {
     // {
     //   sectionTitle: 'Pages'
     // },
-    {
-      title: 'Login',
-      icon: Login,
-      path: '/pages/login',
-      openInNewTab: true
-    },
-    {
-      title: 'Logout',
-      icon: LogoutVariant,
-      path: '/pages/login',
-      openInNewTab: true
-    },
-    {
-      title: 'Register',
-      icon: AccountPlusOutline,
-      path: '/pages/register',
-      openInNewTab: true
-    },
+    // {
+    //   title: 'Login',
+    //   icon: Login,
+    //   path: '/pages/login',
+    //   openInNewTab: true
+    // },
+    // {
+    //   title: 'Logout',
+    //   icon: LogoutVariant,
+    //   path: '/pages/login',
+    //   openInNewTab: true
+    // },
+    // {
+    //   title: 'Register',
+    //   icon: AccountPlusOutline,
+    //   path: '/pages/register',
+    //   openInNewTab: true
+    // },
     // {
     //   title: 'Error',
     //   icon: AlertCircleOutline,
@@ -72,16 +72,16 @@ const navigation = (): VerticalNavItemsType => {
       icon: Post,
       path: '/posts'
     },
-    {
-      title: 'Add Post',
-      icon: CubeOutline,
-      path: '/add-post'
-    },
-    {
-      title: 'Add User',
-      icon: Table,
-      path: '/add-user'
-    },
+    // {
+    //   title: 'Add Post',
+    //   icon: CubeOutline, 
+    //   path: '/add-post'
+    // },
+    // {
+    //   title: 'Add User',
+    //   icon: Table,
+    //   path: '/add-user'
+    // },
     {
       title: 'Users',
       icon: ViewDashboard,
@@ -94,11 +94,11 @@ const navigation = (): VerticalNavItemsType => {
       path: '/roles'
     },
     
-    {
-      title: 'Add Permission',
-      icon: CubeOutline,
-      path: '/permission'
-    },
+    // {
+    //   title: 'Add Permission',
+    //   icon: CubeOutline,
+    //   path: '/permission'
+    // },
     {
       title: 'Permissions',
       icon: AccountCogOutline,

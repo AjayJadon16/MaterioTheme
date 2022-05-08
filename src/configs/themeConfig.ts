@@ -30,7 +30,16 @@ const themeConfig: ThemeConfig = {
 
   // ** Other Configs
   responsiveFontSizes: true /* true | false */,
-  disableRipple: false /* true | false */
+  disableRipple: false /* true | false */,
+
+  unProtectedRoutes: ['/pages/login/', '/pages/register/'],
+  homePageRoute: '/',
+  loginPageRoute: '/pages/login',
+  registerPageRoute: '/pages/register',
+  logoutPageRoute: '/pages/login',
 }
 
 export default themeConfig
+
+
+

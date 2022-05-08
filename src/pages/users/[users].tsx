@@ -9,13 +9,15 @@ import  Userform from 'src/views/form-layouts/Userform'
 
 import { useRouter } from 'next/router'
 
+
 import { useState, useEffect } from 'react'
 
 const displayusers = () => {
   const router = useRouter()
   const { users } = router.query
-  
   console.log(users)
+  
+ 
 
  
    

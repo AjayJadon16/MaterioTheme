@@ -1,10 +1,13 @@
 // ** React Imports
-import { useState, Fragment, ChangeEvent, MouseEvent, ReactNode } from 'react'
+import React, { useEffect,useState, Fragment, ChangeEvent, MouseEvent, ReactNode } from 'react'
 
 // ** Next Imports
 import Link from 'next/link'
 
 // ** MUI Components
+import { Snackbar } from '@mui/material'
+
+import Alert from '@mui/material/Alert'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Divider from '@mui/material/Divider'
@@ -28,6 +31,8 @@ import Twitter from 'mdi-material-ui/Twitter'
 import Facebook from 'mdi-material-ui/Facebook'
 import EyeOutline from 'mdi-material-ui/EyeOutline'
 import EyeOffOutline from 'mdi-material-ui/EyeOffOutline'
+import { useRouter } from 'next/router'
+
 
 // ** Configs
 import themeConfig from 'src/configs/themeConfig'
@@ -37,7 +42,7 @@ import BlankLayout from 'src/@core/layouts/BlankLayout'
 
 // ** Demo Imports
 import FooterIllustrationsV1 from 'src/views/pages/auth/FooterIllustration'
-
+import {useAuth} from "../../../contexts/auth"
 interface State {
   password: string
   showPassword: boolean
@@ -63,13 +68,63 @@ const FormControlLabel = styled(MuiFormControlLabel)<FormControlLabelProps>(({ t
   }
 }))
 
+async function registerUser(credentials) {
+  return fetch('http://166.0.138.149:9000/register', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(credentials)
+  }).then(data => data.json())
+}
+
 const RegisterPage = () => {
   // ** States
   const [values, setValues] = useState<State>({
     password: '',
     showPassword: false
   })
+  const homePageRoute = themeConfig.homePageRoute
+  const [message, setMessage] = useState({
+    open: false,
+    type: 'success',
+    vertical: 'top',
+    horizontal: 'center',
+    text: ''
+  })
 
+  useEffect(() => {
+    async function loadUserFromlocalStorage() {
+      const token = localStorage.getItem('token'),
+        user_data = localStorage.getItem('user_data')
+      if (token && user_data) {
+        router.push(homePageRoute)
+      }
+    }
+    loadUserFromlocalStorage()
+  }, [])
+  
+  const handleClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return
+    }
+    setMessage({ ...message, open: false })
+  }
+
+  const router = useRouter();
+
+  const [name,setname]=useState();
+
+  
+
+  const namehandler=(event)=>{
+    setname(event.target.value)
+  }
+
+  const [email,setemail] = useState();
+  const emailhandler=(event)=>{
+    setemail(event.target.value)
+  }
   // ** Hook
   const theme = useTheme()
 
@@ -82,6 +137,49 @@ const RegisterPage = () => {
   const handleMouseDownPassword = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault()
   }
+
+  const password = values.password
+  const gender = "male"
+  const auth = useAuth()
+
+  const handlesubmit = async (event) => {
+    event.preventDefault()
+
+    console.log(name,email,gender,password)
+    const data = await registerUser({ 
+      name,
+      
+      email,
+      gender,
+      password
+    })
+    console.log(data)
+
+    // const data = {"name":name, "email":email, "password":password}
+    // console.log(data);
+
+    // auth.register(data).then(res => {
+    //   if(res.err){
+    //     setMessage({ ...message, open: true, text: res.message, type: 'error' })
+    //   }
+    // })
+    
+    if (!data.error) {
+      localStorage.setItem("token",data.token)
+      localStorage.setItem("user_data", json.stringify(data.data))
+     
+      setMessage({ ...message, open: true, text: 'Login Sucessfull.', type: 'success' })
+      setTimeout(() => {
+        router.push(homePageRoute)
+      }, 2000)
+      
+    } else {
+      
+
+      setMessage({ ...message, open: true, text: data.message, type: 'error' })
+    }
+  }
+
 
   return (
     <Box className='content-center'>
@@ -166,9 +264,9 @@ const RegisterPage = () => {
             </Typography>
             <Typography variant='body2'>Make your app management easy and fun!</Typography>
           </Box>
-          <form noValidate autoComplete='off' onSubmit={e => e.preventDefault()}>
-            <TextField autoFocus fullWidth id='username' label='Username' sx={{ marginBottom: 4 }} />
-            <TextField fullWidth type='email' label='Email' sx={{ marginBottom: 4 }} />
+          <form noValidate autoComplete='off' onSubmit={handlesubmit}>
+            <TextField autoFocus fullWidth id='name' label='name' sx={{ marginBottom: 4 }} value={name} onChange={namehandler}/>
+            <TextField fullWidth type='email' label='Email' sx={{ marginBottom: 4 }} value={email} onChange={emailhandler}/>
             <FormControl fullWidth>
               <InputLabel htmlFor='auth-register-password'>Password</InputLabel>
               <OutlinedInput
@@ -204,7 +302,7 @@ const RegisterPage = () => {
                 </Fragment>
               }
             />
-            <Button fullWidth size='large' type='submit' variant='contained' sx={{ marginBottom: 7 }}>
+            <Button fullWidth size='large' type='submit' variant='contained' sx={{ marginBottom: 7 }} onClick={handlesubmit}>
               Sign up
             </Button>
             <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
@@ -244,6 +342,17 @@ const RegisterPage = () => {
             </Box>
           </form>
         </CardContent>
+        <Snackbar
+        open={message.open}
+        autoHideDuration={3000}
+        onClose={handleClose}
+        anchorOrigin={message}
+        key={message.vertical + message.horizontal}
+      >
+        <Alert onClose={handleClose} severity={message.type} sx={{ width: '100%' }}>
+          {message.text}
+        </Alert>
+      </Snackbar>
       </Card>
       <FooterIllustrationsV1 />
     </Box>

@@ -1,5 +1,5 @@
 // ** React Imports
-import { useState, ChangeEvent } from 'react'
+import { useState, useEffect, ChangeEvent } from 'react'
 
 // ** MUI Imports
 import Grid from '@mui/material/Grid'
@@ -17,6 +17,11 @@ import { TableCellProps, tableCellClasses } from '@mui/material/TableCell'
 import { styled } from '@mui/material/styles'
 import { Typography } from '@mui/material'
 import router from 'next/router'
+import Box from '@mui/material/Box';
+import LinearProgress from '@mui/material/LinearProgress'
+import Pencil from 'mdi-material-ui/Pencil'
+import { IconButton } from '@mui/material';
+import Delete from 'mdi-material-ui/Delete'
 // import SearchBar from 'material-ui-search-bar'
 
 const StyledTableCell = styled(TableCell)<TableCellProps>(({ theme }) => ({
@@ -40,75 +45,52 @@ const StyledTableRow = styled(TableRow)<TableRowProps>(({ theme }) => ({
   }
 }))
 
-const rowss = [
-  {
-    id: '1',
-    name: 'Management',
-    assigned: 'Administrator',
-    created: '14 Apr 2021, 8:43 PM'
-  },
-
-  {
-    id: '2',
-    name: 'Manage Billing & Roles',
-    assigned: 'Administrator',
-    created: '15 Apr 2021, 8:43 PM'
-  },
-  {
-    id: '3',
-    name: 'Add & Remove Users',
-    assigned: 'Administrator, Manager',
-    created: '16 Apr 2021, 8:43 PM'
-  },
-  {
-    id: '4',
-    name: 'Create Post',
-    assigned: 'Administrator, Manager',
-    created: '16 Apr 2021, 8:43 PM'
-  },
-
-  {
-    id: '5',
-    name: 'Delete Post',
-    assigned: 'Administrator, Manager',
-    created: '16 Apr 2021, 8:43 PM'
-  },
-
-  {
-    id: '6',
-    name: 'Create user',
-    assigned: 'Administrator',
-    created: '16 Apr 2021, 8:43 PM'
-  },
-
-  {
-    id: '7',
-    name: 'Delete user',
-    assigned: 'Administrator',
-    created: '12 Apr 2021, 8:43 PM'
-  },
-  {
-    id: '8',
-    name: 'Only View',
-    assigned: 'Administrator, Manager',
-    created: '16 Apr 2021, 8:43 PM'
-  },
-
-  {
-    id: '9',
-    name: 'Client Communication',
-    assigned: 'Administrator, Manager',
-    created: '16 Apr 2021, 8:43 PM'
-  },
-
-  {
-    id: '10',
-    name: 'Project Planning',
-    assigned: 'Administrator',
-    created: '16 Apr 2021, 8:43 PM'
-  }
-]
 const TableStickyHeader = () => {
+  
+  const [page, setPage] = useState(0)
+  const [rowsPerPage, setRowsPerPage] = useState(10)
+
+  const [values, setValues] = useState({
+    users: [],
+    isUserDataAvailable: false,
+    error: ''
+  })
+
+
+  const handleChangePage = (event: unknown, newPage: number) => {
+    setPage(newPage)
+  }
+
+  const handleChangeRowsPerPage = (event: ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(+event.target.value)
+    setPage(0)
+  }
+
+  const [fetchedpermissions, setfetchedpermissions] = useState([])
+
+  useEffect(() => {
+    async function displayPermission() {
+      const token = localStorage.getItem('token')
+
+      return fetch('http://166.0.138.149:9000/policy', {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify()
+      }).then(data => data.json())
+    }
+
+    const fetchpermissions = async () => {
+      const user = await displayPermission()
+      setfetchedpermissions(user.data)
+      setValues({ ...values, users: user.data, isUserDataAvailable: true, error: '' })
+    }
+
+    fetchpermissions()
+  }, [fetchedpermissions])
+
   // ** States
   const [page, setPage] = useState<number>(0)
   const [rowsPerPage, setRowsPerPage] = useState<number>(10)
@@ -121,11 +103,25 @@ const TableStickyHeader = () => {
     setRowsPerPage(+event.target.value)
     setPage(0)
   }
-  const delhandler = () => {
-    alert('Permission Deleted')
-  }
+
   const addpermission = () => {
     router.push('/permission')
+  }
+
+  async function deleteUser(id) {
+    const token = localStorage.getItem('token')
+    return fetch(`http://166.0.138.149:9000/policy/${id}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify()
+    }).then(data => data.json)
+  }
+  const deluser = async id => {
+    const msg = await deleteUser(id)
+    console.log(msg)
   }
 
   return (
@@ -150,44 +146,61 @@ const TableStickyHeader = () => {
             <TableHead>
               <TableRow>
                 <StyledTableCell align='left'>Name</StyledTableCell>
-                <StyledTableCell align='right'>Assigned to</StyledTableCell>
-                <StyledTableCell align='right'>Created At</StyledTableCell>
+                <StyledTableCell align='left'>Description</StyledTableCell>
+                <StyledTableCell align='left'>Created At</StyledTableCell>
 
-                <StyledTableCell align='right'>Action</StyledTableCell>
+                <StyledTableCell align='left'>Action</StyledTableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {rowss.map(row => (
-                <StyledTableRow key={row.id}>
-                  <StyledTableCell component='th' scope='row'>
-                    {row.name}
-                  </StyledTableCell>
-                  <StyledTableCell align='right'>{row.assigned}</StyledTableCell>
-                  <StyledTableCell align='right'>{row.created}</StyledTableCell>
-                  <StyledTableCell align='right'>
-                    {' '}
-                    <Link href={`/permissions/${row.id}`}>
-                      <Button variant='contained' size='small'>
-                        Edit
-                      </Button>
-                    </Link>{' '}
-                    <Button variant='secondary' size='small' onClick={delhandler}>
-                      Delete
-                    </Button>
+              {values.isUserDataAvailable ? (fetchedpermissions.filter((permission)=>{
+                return permission.isActive==true
+              }).slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(fetchedpermission =>
+                 (
+                  <StyledTableRow key={fetchedpermission._id}>
+                    <StyledTableCell component='th' scope='row'>
+                      {fetchedpermission.display_name}
+                    </StyledTableCell>
+                    <StyledTableCell align='left'>{fetchedpermission.description}</StyledTableCell>
+                    <StyledTableCell align='left'>{fetchedpermission.createdAt}</StyledTableCell>
+                    <StyledTableCell align='left'>
+                      {' '}
+                      <Link href={`/permissions/${fetchedpermission._id}`}>
+                        <IconButton variant='contained' size='small'>
+                          <Pencil/>
+                        </IconButton>
+                      </Link>{' '}
+                      <IconButton variant='secondary' size='small' onClick={() => deluser(fetchedpermission._id)}>
+                        <Delete/>
+                      </IconButton>
+                    </StyledTableCell>
+                  </StyledTableRow>
+                ) 
+              )
+              ):(
+                <StyledTableRow key='0'>
+                  <StyledTableCell component='th' align='center' colSpan='100%' scope='row'>
+                    <Box sx={{ width: '100%', height: '40px' }}>
+                      <LinearProgress />
+                      {/* <ReactLoading type='cylon' color='#0000FF' /> */}
+                    </Box>
                   </StyledTableCell>
                 </StyledTableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
-          {/* <TablePagination
-        rowsPerPageOptions={[10, 15, 20]}
-        component='div'
-        count={rows.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-      /> */}
+
+          <TablePagination
+            rowsPerPageOptions={[10, 15, 20]}
+            component='div'
+            count={fetchedpermissions.filter((permission)=>{
+              return permission.isActive==true
+            }).length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
         </Paper>
       </Grid>
     </Grid>

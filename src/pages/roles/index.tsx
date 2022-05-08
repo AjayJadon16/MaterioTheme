@@ -4,6 +4,7 @@ import Button from '@mui/material/Button'
 import { useRouter } from 'next/router'
 import Typography from '@mui/material/Typography'
 import Paper from '@mui/material/Paper'
+import CardUser from 'src/views/cards/CardUser'
 
 const Roles = () => {
   const router = useRouter()
@@ -23,9 +24,10 @@ const Roles = () => {
             <Button variant='contained' size='large' onClick={clickhandler}>
               Add Role
             </Button>
+            
           </Grid>
         </Grid>
-        
+        <CardUser></CardUser>
       </Paper>
     </Grid>
   )
